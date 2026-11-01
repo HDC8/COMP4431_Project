@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live2D Viewer</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* 透明背景，让 Chainlit 页面的底色透出来 */
+        background: transparent;
+      }
+
+      #live2d-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* 避免移动端拖动时触发页面滚动 */
+        touch-action: none;
+      }
+
+      #status {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        text-align: center;
+        white-space: pre-wrap;
+        font: 13px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #8b8b8b;
+        pointer-events: none;
+      }
+
+      #status.hidden {
+        display: none;
+      }
+
+      #status.error {
+        color: #e5484d;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      模型在容器里的摆放位置由下面这些 data-* 控制（viewer.js 会读），
+      改这里就能调位置，不用动 JS：
+
+        data-align     left | center | right   水平对齐（默认 left，把右侧空间让出来）
+        data-offset-x  额外的水平偏移，按容器宽度的比例算，可正可负（默认 0.04，留一点边距）
+        data-anchor-y  bottom | center         垂直对齐（默认 bottom，人物贴底边站）
+        data-scale     在“自动适配容器”基础上的缩放倍率（默认 1）
+
+      注意：canvas 本身是铺满整个 iframe 的（位置/大小由 CSS 决定），
+      这里调的是“模型在这块画布里的位置”。
+      也可以用 URL 参数临时覆盖：?align=center&offsetX=0&anchorY=center&scale=1.2
+    -->
+    <canvas
+      id="live2d-canvas"
+      data-align="left"
+      data-offset-x="0.04"
+      data-anchor-y="bottom"
+      data-scale="1"
+    ></canvas>
+    <div id="status">Live2D 加载中…</div>
+
+    <!--
+      顺序不能变：
+      1. Cubism Core（提供 window.Live2DCubismCore）
+      2. PIXI（提供 window.PIXI）
+      3. pixi-live2d-display 的 cubism4 构建（挂到 window.PIXI.live2d）
+         注意：不要用它的根入口 index.min.js —— 那要求 Cubism 2 和 4 两套 runtime
+         同时存在，缺一个就会静默失败。
+    -->
+    <script src="../vendor/live2dcubismcore.min.js"></script>
+    <script src="../vendor/pixi.min.js"></script>
+    <script src="../vendor/pixi-live2d-display-cubism4.min.js"></script>
+    <script src="./viewer.js"></script>
+  </body>
+</html>
